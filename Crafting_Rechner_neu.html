@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RP Crafting Rechner by xXSitzheizungXx</title>
+    <style>
+        :root {
+            --bg-dark: #0f0f23; 
+            --bg-gradient: radial-gradient(circle at 50% -20%, #1a1a3a, #0f0f23);
+            --card-bg: rgba(20, 20, 45, 0.95); 
+            --accent-red: #ff0055; 
+            --accent-purple: #9d00ff; 
+            --accent-blue: #00d4ff; 
+            --accent-green: #00ff88; 
+            --text-white: #ffffff;
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            background-image: var(--bg-gradient);
+            color: var(--text-white);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            padding: 20px;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            box-sizing: border-box;
+            gap: 20px;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+            opacity: 0.1;
+            z-index: -1;
+        }
+		
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #0a0a12; }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(var(--accent-purple), var(--accent-blue));
+            border-radius: 5px;
+            border: 2px solid #0a0a12;
+        }
+
+        .side-panel {
+            width: 300px;
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(157, 0, 255, 0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: sticky;
+            top: 20px;
+            max-height: 90vh;
+            overflow-y: auto;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .container {
+            flex: 1;
+            max-width: 900px;
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(157, 0, 255, 0.1);
+            border: 1px solid rgba(157, 0, 255, 0.2);
+            backdrop-filter: blur(20px);
+        }
+
+        @keyframes pulse {
+            0% { filter: drop-shadow(0 0 5px var(--accent-purple)); transform: scale(1); }
+            50% { filter: drop-shadow(0 0 20px var(--accent-blue)); transform: scale(1.03); }
+            100% { filter: drop-shadow(0 0 5px var(--accent-purple)); transform: scale(1); }
+        }
+
+        h1 { text-align: center; background: linear-gradient(to right, var(--accent-blue), var(--accent-purple), var(--accent-red)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; letter-spacing: 6px; font-size: 2em; margin-bottom: 25px; margin-top: 0; font-weight: 900; }
+        
+        .setup-section { display: grid; grid-template-columns: 1fr 1fr 120px; gap: 15px; margin-bottom: 25px; padding: 20px; background: rgba(0, 0, 0, 0.4); border-radius: var(--border-radius); border: 1px solid rgba(0, 212, 255, 0.1); }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        label { font-size: 0.65em; text-transform: uppercase; color: var(--accent-blue); letter-spacing: 1px; font-weight: 800; opacity: 0.8; }
+        select, input { padding: 10px; border-radius: 8px; border: 1px solid rgba(157, 0, 255, 0.3); background: #070715; color: white; font-size: 14px; outline: none; transition: 0.3s; }
+
+        .btn-row { grid-column: span 3; display: flex; gap: 10px; margin-top: 10px; }
+        .calc-btn { flex: 2; background: linear-gradient(45deg, var(--accent-purple), var(--accent-red)); color: white; padding: 14px; border: none; border-radius: 8px; font-size: 1em; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.4s; }
+        .add-btn { flex: 1; background: #1a1a3a; color: var(--accent-blue); border: 1px solid var(--accent-blue); border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-size: 0.8em; }
+        .add-btn:hover { background: var(--accent-blue); color: black; }
+
+        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .card { background: rgba(255, 255, 255, 0.03); padding: 15px; border-radius: var(--border-radius); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .full-width { grid-column: span 2; }
+        .header-card { background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(157, 0, 255, 0.08)); border: 1px solid rgba(0, 212, 255, 0.2); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 120px; text-align: center; margin-bottom: 5px; padding: 20px; }
+        .result-title { font-size: 1.6em; margin: 0 0 8px 0; color: var(--accent-blue); font-weight: 800; }
+        h3 { margin-top: 0; color: var(--accent-blue); font-size: 0.8em; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid rgba(0, 212, 255, 0.1); padding-bottom: 10px; margin-bottom: 15px; }
+        
+        ul { list-style: none; padding: 0; margin: 0; }
+        li { padding: 8px 0; display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255, 255, 255, 0.02); font-size: 0.9em; }
+        .qty { font-weight: 700; color: #fff; }
+        .cash-green { color: var(--accent-green); font-weight: bold; text-shadow: 0 0 8px rgba(0, 255, 136, 0.5); }
+        .cash-red { color: var(--accent-red); font-weight: bold; text-shadow: 0 0 8px rgba(255, 0, 85, 0.5); }
+        .plz-badge { font-size: 0.65em; color: var(--accent-purple); border: 1px solid var(--accent-purple); padding: 2px 6px; border-radius: 4px; text-transform: uppercase; font-weight: 800; float: right; }
+
+        .component-box { 
+            margin-bottom: 15px; 
+            padding: 15px; 
+            background: rgba(10, 10, 25, 0.6); 
+            border-radius: 8px; 
+            border-left: 4px solid var(--accent-purple);
+            box-shadow: inset 0 0 15px rgba(157, 0, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        .component-box:hover { background: rgba(157, 0, 255, 0.08); transform: translateX(5px); }
+        .comp-header { color: var(--accent-purple); font-weight: 900; display: block; margin-bottom: 10px; font-size: 0.95em; text-transform: uppercase; letter-spacing: 1px; }
+        .sub-item { font-size: 0.9em; padding-left: 10px; color: rgba(255, 255, 255, 0.7); margin: 6px 0; display: flex; align-items: center; }
+        .sub-item-prefix { color: rgba(255, 255, 255, 0.3); margin-right: 10px; font-family: monospace; font-size: 1.2em; }
+
+        .farm-item { background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; margin-bottom: 10px; border-left: 3px solid var(--accent-blue); }
+        .farm-item-header { font-weight: bold; color: var(--accent-blue); font-size: 0.9em; display: flex; justify-content: space-between; align-items: center; }
+        .farm-controls input { width: 50px; padding: 3px; font-size: 12px; }
+        .remove-btn { color: var(--accent-red); cursor: pointer; font-size: 1.2em; border: none; background: none; }
+        .clear-btn { width: 100%; padding: 10px; margin-top: 15px; background: rgba(255,0,85,0.1); color: var(--accent-red); border: 1px solid var(--accent-red); border-radius: 8px; cursor: pointer; font-weight: bold; }
+        
+        .total-box { margin-top: 20px; padding: 15px; background: rgba(0,212,255,0.05); border-radius: 8px; border: 1px dashed var(--accent-blue); }
+        .total-box h4 { margin: 0 0 10px 0; font-size: 0.8em; color: var(--accent-blue); text-transform: uppercase; }
+
+        .collapsible-header { cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 5px 0; transition: 0.3s; }
+        .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; border-bottom: 1px solid rgba(0, 212, 255, 0.1); }
+        .collapsible-content.open { max-height: 500px; margin-bottom: 15px; }
+        .price-details { background: rgba(0, 0, 0, 0.3); border-radius: 8px; padding: 12px; margin-top: 10px; font-size: 0.85em; }
+        .price-line { display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 2px; }
+
+        .market-results-wrapper { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 20px; width: 100%; }
+        .market-card { 
+            background: rgba(10, 10, 35, 0.9); 
+            border: 2px solid var(--accent-blue); 
+            border-radius: 15px; 
+            padding: 20px; 
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4); 
+            flex: 1; min-width: 280px;
+        }
+        .market-title { color: var(--accent-blue); font-size: 1.4em; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; }
+        .market-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .market-table td { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95em; }
+        .market-item-name { color: #fff; font-weight: bold; }
+        .market-item-price { text-align: right; color: var(--accent-red); font-weight: 900; }
+        .plz-badge-market { background: rgba(157, 0, 255, 0.1); color: var(--accent-purple); border: 1px solid var(--accent-purple); padding: 2px 8px; border-radius: 4px; font-size: 0.7em; font-weight: 800; display: inline-block; margin-bottom: 10px; }
+
+        .profit-line { font-size: 0.9em; margin: 5px 0; }
+		
+        footer {
+            width: 100%;
+            flex-basis: 100%;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 40px;
+            color: rgba(255, 255, 255, 0.3);
+            letter-spacing: 2px;
+            text-transform: none;
+            font-weight: 600;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            clear: both;
+        }
+
+        footer span {
+            animation: nameGlow 3s infinite ease-in-out;
+        }
+
+        @keyframes nameGlow {
+            0% { text-shadow: 0 0 5px var(--accent-purple); color: var(--accent-purple); }
+            50% { text-shadow: 0 0 15px var(--accent-blue); color: var(--accent-blue); }
+            100% { text-shadow: 0 0 5px var(--accent-purple); color: var(--accent-purple); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="side-panel">
+    <div>
+        <div class="collapsible-header" onclick="togglePriceCalc()">
+            <h3 style="margin:0; border:none; padding:0;">Preis Rechner</h3>
+            <span id="calcArrow">▼</span>
+        </div>
+        <div id="priceCalcContent" class="collapsible-content">
+            <div class="input-group" style="margin-top:15px;">
+                <label>Rohstoff</label>
+                <select id="rawMaterialSelect" onchange="updatePriceCalc()"></select>
+            </div>
+            <div class="input-group" style="margin-top:10px;">
+                <label>Menge</label>
+                <input type="number" id="priceQty" value="1" min="1" oninput="updatePriceCalc()">
+            </div>
+            <div class="input-group" style="margin-top:10px;">
+                <label>Aufschlag (%)</label>
+                <input type="number" id="pricePercent" value="0" min="0" oninput="updatePriceCalc()">
+            </div>
+            <div class="price-details">
+                <div class="price-line"><span>Einzelpreis:</span><span id="detailSingle" class="qty">0$</span></div>
+                <div class="price-line"><span>Aufschlag:</span><span id="detailMarkup" class="cash-red">+ 0$</span></div>
+                <div class="price-line" style="border:none; margin-top:8px;"><span style="font-weight:bold; color:var(--accent-blue);">GESAMT:</span><span id="totalPriceDisplay" class="cash-green" style="font-size:1.2em;">0$</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <h3>Farm-Liste (Rohstoffe)</h3>
+        <div id="farmListItems"><p style="font-size: 0.8em; color: #666; text-align: center;">Deine Liste ist noch leer...</p></div>
+        <div id="farmTotal" class="total-box" style="display: none;"><h4>Gesamtbedarf:</h4><ul id="totalResources"></ul></div>
+        <button class="clear-btn" onclick="clearFarmList()">Liste leeren</button>
+    </div>
+</div>
+
+<div class="container">
+    <h1>RP Crafting System</h1>
+    <div class="setup-section">
+        <div class="input-group">
+            <label>1. Kategorie</label>
+            <select id="categorySelect" onchange="updateItemList()"></select>
+        </div>
+        <div class="input-group">
+            <label id="inputLabel">2. Item wählen</label>
+            <select id="itemSelect"></select>
+        </div>
+        <div class="input-group">
+            <label>3. Menge</label>
+            <input type="number" id="amountInput" value="1" min="1">
+        </div>
+        <div class="btn-row">
+            <button class="calc-btn" onclick="calculate()">Berechnung starten</button>
+            <button class="add-btn" onclick="addToFarmList()">+ Hinzufügen</button>
+        </div>
+    </div>
+
+    <div id="results" class="result-grid" style="display: none;">
+        <div class="card full-width header-card" id="headerCard"></div>
+        
+        <div id="normalResults" class="full-width result-grid" style="display:contents;">
+            <div class="card" id="card1"><h3>[1] SAMMELN (Rohstoffe)</h3><ul id="rawList"></ul></div>
+            <div class="card" id="card2"><h3 id="processHeader">[2] VERARBEITEN</h3><ul id="processList"></ul></div>
+            <div class="card full-width" id="card3"><h3>[3] SCHRITT-FÜR-SCHRITT HERSTELLEN</h3><div id="componentList"></div></div>
+            <div class="card full-width" id="card4"><h3 id="finalHeader">[4] FINALE MONTAGE</h3><ul id="finalRecipeList"></ul></div>
+        </div>
+
+        <div id="marketResults" class="full-width market-results-wrapper" style="display:none;"></div>
+    </div>
+</div>
+
+<footer>
+    &copy; 2026 Crafting Rechner by <span style="color: var(--accent-purple); font-weight: bold;">xXSitzheizungXx</span>
+</footer>
+
+<script>
+    const rawMaterialPrices = { "Eisen": 40, "Golderz": 10, "Kupfer": 40, "Kohle": 10, "Aluminium": 35, "Plastik": 25, "Gummi": 23, "Metallschrott": 8, "Stahl": 110 };
+    const blackMarketItems = { "Schutzweste": 5000, "Schlagring": 1000, "Dolch": 1500, "Machete": 2000, "Streitaxt": 2000, "Double Action Revolver": 55000, "Tec-9": 60000, "Mini SMG": 80000, "Double Barrel Shotgun": 70000 };
+    const weaponAccessoires = { "Schalldämpfer": 2500, "Taktischer Schalldämpfer": 3000, "Erweitertes Pistolenmagazin": 2500, "Erweitertes SMG Magazin": 3500, "Trommelmagazin": 4500, "Luxus Waffenskin": 1000 };
+    const burglaryTools = { "Dietrich": 750, "Erweiterter Dietrich": 2000, "Brecheisen": 500 };
+    
+    const drugConfigs = {
+        "Amphetamine": { yield: 12, price: 70, recipe: { "Aceton": 1, "Ammoniak": 1, "Schwefelsäure": 1, "Natriumborhydrid": 1, "Koffein-Pulver": 1 } },
+        "Kokain": { 
+            yield: 1, 
+            brickPrice: 1900, 
+            recipe: { 
+                "Kokablätter": 100, 
+                "Zement": 2, 
+                "Benzin": 2, 
+                "Salzsäure": 1 
+            } 
+        },
+        "Magic mushroom": { yield: 5, price: 90, recipe: { "Zergquetschte Frösche": 10, "Pilze": 10 } },
+        "Heroin": { yield: 5, price: 150, recipe: { "Heroin Pulver": 5, "Leere Spritzen": 5 } },        
+        "Meth": { yield: 9, price: 85, recipe: {"Lithium": 3, "Ethanol": 1, "Aceton": 1, "Pseudoephedrine": 1, "Ammoniak": 1 } },
+        "Weed (OG Kush)": { brickPrice: 1400, bagPrice: 35, yield: 9 },
+        "Weed (White Widow)": { brickPrice: 1800, bagPrice: 43, yield: 9 },
+        "Weed (Purple Haze)": { brickPrice: 1600, bagPrice: 39, yield: 9 },
+        "Weed (Blue Dream)": { brickPrice: 2400, bagPrice: 55, yield: 9 }
+    };
+    
+    const ammoConfig = { "Munition (45ACP/50AE/9MM)": 50, "Munition (12 Gauge)": 10, "Munition (.38 LC)": 50 };
+
+    const components = {
+        "Schwerer Pistolenlauf": {"Aluminium": 25, "Eisen": 25},
+        "Pistolenabzug": {"Stahl": 5, "Gummi": 5},
+        "Schweres Pistolengehäuse": {"Plastik": 10, "Gummi": 5, "Aluminium": 5, "Stahl": 10},
+        "Pistolenfeder": {"Eisen": 10},
+        "Pistolengehäuse": {"Gummi": 5, "Plastik": 5, "Stahl": 10},
+        "Pistolenlauf": {"Aluminium": 15, "Eisen": 15},
+        "Clip": {"Schwarzpulver": 1, "Aluminiumschrott": 25},
+        "Clip1": {"Schwarzpulver": 1, "Plastikschrott": 25},
+        "Clip2": {"Schwarzpulver": 1, "Aluminiumschrott": 25}
+    };
+    
+    const categories = {
+        "Waffen": { "Vintage Pistole": {"Schwerer Pistolenlauf": 3, "Pistolenabzug": 1, "Schweres Pistolengehäuse": 3, "Pistolenfeder": 1, "Schwarzgeld": 1000, "plz": "10100"}, "Pistole .50": {"Schwerer Pistolenlauf": 3, "Pistolenabzug": 2, "Schweres Pistolengehäuse": 3, "Pistolenfeder": 2, "Schwarzgeld": 1000, "plz": "10100"}, "XM3 Pistole": {"Pistolenabzug": 2, "Pistolengehäuse": 3, "Pistolenfeder": 2, "Pistolenlauf": 3, "Schwarzgeld": 750, "plz": "10100"}, "Ceramic Pistole": {"Pistolenabzug": 1, "Pisolengehäuse": 3, "Pistolenfeder": 2, "Pistolenlauf": 3, "Schwarzgeld": 750, "plz": "10100"}, "Pistole": {"Pistolenabzug": 1, "Pistolengehäuse": 2, "Pistolenfeder": 1, "Pistolenlauf": 2, "Schwarzgeld": 750, "plz": "10100"}, "SNS Pistole": {"Stahl": 20, "Gummi": 20, "Plastik": 20, "Aluminium": 10, "Bargeld": 300, "plz": "Würfelpark"} },
+        "Munition": { "Munition (45ACP/50AE/9MM)": {"Clip": 1}, "Munition (12 Gauge)": {"Clip1": 1}, "Munition (.38 LC)": {"Clip2": 1} },
+        "Drogen": { "Amphetamine": drugConfigs["Amphetamine"].recipe, "Kokain": drugConfigs["Kokain"].recipe, "Magic mushroom": drugConfigs["Magic mushroom"].recipe, "Heroin": drugConfigs["Heroin"].recipe, "Meth": drugConfigs["Meth"].recipe, "Weed (OG Kush)": { "Samen": 1, "Dünger": 1, "Pestizide": 1 }, "Weed (Purple Haze)": { "Samen": 1, "Dünger": 1, "Pestizide": 1 }, "Weed (White Widow)": { "Samen": 1, "Dünger": 1, "Pestizide": 1 }, "Weed (Blue Dream)": { "Samen": 1, "Dünger": 1, "Pestizide": 1 } },
+        "Schwarzmarkt": { "Alle Angebote (Übersicht)": "LIST" }
+    };
+    
+    const processing = { "Stahl": {"Kohle": 30, "Eisenerz": 30, "yield": 10}, "Gummi": {"Gummifetzen": 40, "yield": 20}, "Plastik": {"Plastikschrott": 50, "yield": 30}, "Aluminium": {"Aluminiumschrott": 25, "yield": 15}, "Eisen": {"Eisenerz": 50, "yield": 25}, "Goldbarren": {"Golderz": 50, "yield": 5}, "Kupfer": {"Kupfererz": 30, "yield": 10} };
+
+    let farmList = [];
+
+    function init() {
+        const catSelect = document.getElementById('categorySelect');
+        Object.keys(categories).forEach(cat => { let opt = document.createElement('option'); opt.value = cat; opt.innerHTML = cat; catSelect.appendChild(opt); });
+        const rawSelect = document.getElementById('rawMaterialSelect');
+        Object.keys(rawMaterialPrices).forEach(mat => { let opt = document.createElement('option'); opt.value = mat; opt.innerHTML = mat; rawSelect.appendChild(opt); });
+        updateItemList();
+        updatePriceCalc();
+    }
+
+    function togglePriceCalc() {
+        const content = document.getElementById('priceCalcContent');
+        const arrow = document.getElementById('calcArrow');
+        content.classList.toggle('open');
+        arrow.innerHTML = content.classList.contains('open') ? '▲' : '▼';
+    }
+
+    function updatePriceCalc() {
+        const mat = document.getElementById('rawMaterialSelect').value;
+        const qty = parseInt(document.getElementById('priceQty').value) || 0;
+        const percent = parseInt(document.getElementById('pricePercent').value) || 0;
+        const price = rawMaterialPrices[mat];
+        const subtotal = price * qty;
+        const markupAmount = subtotal * (percent / 100);
+        const finalTotal = subtotal + markupAmount;
+        document.getElementById('detailSingle').innerText = price.toLocaleString() + "$";
+        document.getElementById('detailMarkup').innerText = "+ " + markupAmount.toLocaleString() + "$";
+        document.getElementById('totalPriceDisplay').innerText = finalTotal.toLocaleString() + "$";
+    }
+
+    function updateItemList() {
+        const cat = document.getElementById('categorySelect').value;
+        const itemSelect = document.getElementById('itemSelect');
+        itemSelect.innerHTML = '';
+        Object.keys(categories[cat]).forEach(item => { let opt = document.createElement('option'); opt.value = item; opt.innerHTML = item; itemSelect.appendChild(opt); });
+    }
+
+    function calculate() {
+        const cat = document.getElementById('categorySelect').value;
+        const item = document.getElementById('itemSelect').value;
+        const amount = parseInt(document.getElementById('amountInput').value);
+        const header = document.getElementById('headerCard');
+        const results = document.getElementById('results');
+        const normalResults = document.getElementById('normalResults');
+        const marketResults = document.getElementById('marketResults');
+
+        results.style.display = 'grid';
+
+        if (cat === "Schwarzmarkt") {
+            normalResults.style.display = 'none';
+            marketResults.style.display = 'flex';
+            marketResults.innerHTML = ''; 
+
+            header.innerHTML = `<h2 class="result-title">SCHWARZMARKT PREISLISTE</h2><p style="color:var(--accent-blue); font-size:0.9em; margin-top:-10px;">Menge: ${amount}x</p>`;
+
+            let card1 = `<div class="market-card">
+                <div class="market-title">🔫 WAFFEN & SCHUTZ</div>
+                <div class="plz-badge-market">PLZ 10059</div>
+                <table class="market-table">`;
+            for(let k in blackMarketItems) card1 += `<tr><td class="market-item-name">${k}</td><td class="market-item-price">${(blackMarketItems[k]*amount).toLocaleString()}$</td></tr>`;
+            card1 += `</table></div>`;
+
+            let card2 = `<div class="market-card">
+                <div class="market-title">🔌 ZUBEHÖR</div>
+                <div class="plz-badge-market" style="border-color:var(--accent-blue); color:var(--accent-blue);">PLZ 7350</div>
+                <table class="market-table">`;
+            for(let k in weaponAccessoires) card2 += `<tr><td class="market-item-name">${k}</td><td class="market-item-price">${(weaponAccessoires[k]*amount).toLocaleString()}$</td></tr>`;
+            card2 += `</table></div>`;
+
+            let card3 = `<div class="market-card">
+                <div class="market-title">🛠️ EINBRUCH / HEHLER</div>
+                <div class="plz-badge-market" style="border-color:var(--accent-green); color:var(--accent-green);">PLZ 1234</div>
+                <table class="market-table">`;
+            for(let k in burglaryTools) card3 += `<tr><td class="market-item-name">${k}</td><td class="market-item-price">${(burglaryTools[k]*amount).toLocaleString()}$</td></tr>`;
+            card3 += `</table></div>`;
+
+            marketResults.innerHTML = card1 + card2 + card3;
+            ["card1", "card2", "card3", "card4"].forEach(id => document.getElementById(id).style.display = 'none');
+            return;
+        }
+
+        normalResults.style.display = 'contents';
+        marketResults.style.display = 'none';
+
+        if (cat === "Munition") {
+            displayCrafting(cat, item, amount);
+            const totalAmmo = amount * ammoConfig[item];
+            header.innerHTML += `<p style="color: var(--accent-blue); font-weight: bold; margin-top: 10px;">Erhaltene Munition gesamt: ${totalAmmo.toLocaleString()} Schuss</p>`;
+            return;
+        }
+
+        if (cat === "Drogen") {
+            ["card1", "card2", "card3", "card4"].forEach(id => document.getElementById(id).style.display = 'none');
+            document.getElementById('card4').style.display = 'block';
+            document.getElementById('finalHeader').innerText = "RESSOURCEN";
+            const montageList = document.getElementById('finalRecipeList'); montageList.innerHTML = '';
+            const conf = drugConfigs[item];
+
+            if (item === "Kokain") {
+                const revenue = amount * conf.brickPrice;
+                const tax = revenue * 0.1;
+                const profit = revenue - tax;
+                header.innerHTML = `<h2 class="result-title">${amount}x Brick ${item}</h2>
+                <div class="profit-line">Umsatz: <span class="cash-green">${revenue.toLocaleString()}$</span> | Abgabe (10%): <span class="cash-red">-${tax.toLocaleString()}$</span> | <b>Profit: ${profit.toLocaleString()}$</b></div>`;
+                for(let key in conf.recipe) {
+                    montageList.innerHTML += `<li><span>${key}</span><span class="qty">${Math.round((conf.recipe[key] * amount) * 100) / 100}x</span></li>`;
+                }
+            } else if (item.includes("Weed")) {
+                const bloomYield = Math.floor(amount * conf.yield); 
+                const bricks = Math.floor(bloomYield / 50);
+                header.innerHTML = `<h2 class="result-title">${amount}x Samen (${item})</h2>
+                <div style="color: var(--accent-blue); font-weight: bold; margin-bottom: 10px;">Erwarteter Ertrag im Schnitt: ${bloomYield} Blüten</div>
+                <div class="profit-line">Bricks (${bricks}x): <span class="cash-green">${(bricks * conf.brickPrice).toLocaleString()}$</span> | Abgabe: <span class="cash-red">-${(bricks * conf.brickPrice * 0.1).toLocaleString()}$</span> | <b>Profit: ${(bricks * conf.brickPrice * 0.9).toLocaleString()}$</b></div>
+                <div class="profit-line">Baggy (${bloomYield}x): <span class="cash-green">${(bloomYield * conf.bagPrice).toLocaleString()}$</span> | Abgabe: <span class="cash-red">-${(bloomYield * conf.bagPrice * 0.1).toLocaleString()}$</span> | <b>Profit: ${(bloomYield * conf.bagPrice * 0.9).toLocaleString()}$</b></div>`;
+                montageList.innerHTML = `<li><span>Samen</span><span class="qty">${amount}x</span></li><li><span>Dünger</span><span class="qty">${amount}x</span></li><li><span>Pestizide</span><span class="qty">${amount}x</span></li>`;
+            } else {
+                const batches = Math.ceil(amount / conf.yield);
+                const revenue = amount * conf.price;
+                const profit = revenue * 0.9;
+                header.innerHTML = `<h2 class="result-title">${amount}x ${item}</h2>
+                <div style="color: var(--accent-blue); font-weight: bold; margin-bottom: 10px;">Erwarteter Ertrag im Schnitt: ${amount} Einheiten</div>
+                <div class="profit-line">Umsatz: <span class="cash-green">${revenue.toLocaleString()}$</span> | Abgabe: <span class="cash-red">-${(revenue*0.1).toLocaleString()}$</span> | <b>Profit: ${profit.toLocaleString()}$</b></div>`;
+                for(let key in conf.recipe) montageList.innerHTML += `<li><span>${key}</span><span class="qty">${Math.round((conf.recipe[key] * batches) * 100) / 100}x</span></li>`;
+            }
+            return;
+        }
+        displayCrafting(cat, item, amount);
+    }
+
+    function displayCrafting(cat, item, amount) {
+        ["card1", "card2", "card3", "card4"].forEach(id => document.getElementById(id).style.display = 'block');
+        const processHeader = document.getElementById('processHeader');
+        const finalHeader = document.getElementById('finalHeader');
+        processHeader.innerHTML = (item === "SNS Pistole" || cat === "Munition" || cat === "Verschiedenes") ? `[2] VERARBEITEN` : `[2] VERARBEITEN <span class="plz-badge">PLZ 9393</span>`;
+        if (item === "SNS Pistole") { document.getElementById('card3').style.display = 'none'; finalHeader.innerText = "[3] FINALE MONTAGE"; }
+        else { document.getElementById('card3').style.display = 'block'; finalHeader.innerText = "[4] FINALE MONTAGE"; }
+
+        let finalRawMats = {}; let finalComps = {}; let cash = 0; let blackCash = 0;
+        function resolve(name, qty) {
+            if (name === "Bargeld") { cash += qty; return; }
+            if (name === "Schwarzgeld") { blackCash += qty; return; }
+            if (components[name]) {
+                finalComps[name] = (finalComps[name] || 0) + qty;
+                for (let sub in components[name]) resolve(sub, components[name][sub] * qty);
+            } else { finalRawMats[name] = (finalRawMats[name] || 0) + qty; }
+        }
+        const recipeData = categories[cat][item];
+        for (let key in recipeData) if(key !== "plz") resolve(key, recipeData[key] * amount);
+
+        let processedRaw = {};
+        for (let mat in finalRawMats) {
+            if (processing[mat]) {
+                const proc = processing[mat]; const batches = Math.ceil(finalRawMats[mat] / proc.yield);
+                for (let raw in proc) if(raw !== "yield") processedRaw[raw] = (processedRaw[raw] || 0) + (proc[raw] * batches);
+            } else { processedRaw[mat] = (processedRaw[mat] || 0) + finalRawMats[mat]; }
+        }
+
+        let locText = recipeData.plz ? `<p style="color:#aaa; margin-top:8px; font-size:0.9em;">Montage: ${recipeData.plz === "Würfelpark" ? "Ammunation Würfelpark" : "PLZ " + recipeData.plz}</p>` : "";
+        document.getElementById('headerCard').innerHTML = `<h2 class="result-title">${amount}x ${item}</h2>` + 
+            (cash > 0 ? `<p>Bargeld: <span class="cash-green">${cash.toLocaleString()}$</span></p>` : "") + 
+            (blackCash > 0 ? `<p>Schwarzgeld: <span class="cash-red">${blackCash.toLocaleString()}$</span></p>` : "") + locText;
+
+        fillList('rawList', processedRaw); fillList('processList', finalRawMats);
+        
+        const compDiv = document.getElementById('componentList'); 
+        compDiv.innerHTML = '';
+        Object.keys(finalComps).sort().forEach(c => {
+            let box = document.createElement('div'); 
+            box.className = 'component-box';
+            let subItemsHtml = Object.keys(components[c]).map(s => `
+                <div class="sub-item">
+                    <span class="sub-item-prefix">└─</span> 
+                    <span>${Math.round((components[c][s] * finalComps[c]) * 100) / 100}x ${s}</span>
+                </div>
+            `).join('');
+            
+            box.innerHTML = `<span class="comp-header">${finalComps[c]}x ${c}</span>` + subItemsHtml;
+            compDiv.appendChild(box);
+        });
+
+        const montageList = document.getElementById('finalRecipeList'); montageList.innerHTML = '';
+        for(let key in recipeData) if(key !== "plz") montageList.innerHTML += `<li><span>${key}</span><span class="qty">${Math.round((recipeData[key] * amount) * 100) / 100}x</span></li>`;
+        if (cat === "Munition") { document.getElementById('card4').style.display = 'none'; }
+    }
+
+    function fillList(id, data) { const el = document.getElementById(id); el.innerHTML = ''; Object.keys(data).sort().forEach(k => el.innerHTML += `<li><span>${k}</span><span class="qty">${Math.round(data[k] * 100) / 100}x</span></li>`); }
+
+    function addToFarmList() {
+        const cat = document.getElementById('categorySelect').value;
+        const item = document.getElementById('itemSelect').value;
+        const amount = parseInt(document.getElementById('amountInput').value);
+        if (cat === "Schwarzmarkt") return;
+        const existing = farmList.find(i => i.item === item);
+        if (existing) { existing.amount += amount; } else { farmList.push({ cat, item, amount }); }
+        renderFarmList();
+    }
+
+    function removeFromFarmList(index) { farmList.splice(index, 1); renderFarmList(); }
+    function clearFarmList() { farmList = []; renderFarmList(); }
+
+    function renderFarmList() {
+        const listDiv = document.getElementById('farmListItems');
+        const totalDiv = document.getElementById('farmTotal');
+        const totalList = document.getElementById('totalResources');
+        if (farmList.length === 0) { listDiv.innerHTML = '<p style="font-size: 0.8em; color: #666; text-align: center;">Deine Liste ist noch leer...</p>'; totalDiv.style.display = 'none'; return; }
+        listDiv.innerHTML = farmList.map((entry, index) => `<div class="farm-item"><div class="farm-item-header"><span>${entry.item}</span><button class="remove-btn" onclick="removeFromFarmList(${index})">&times;</button></div><div class="farm-controls"><label style="font-size: 10px;">MENGE:</label><input type="number" value="${entry.amount}" onchange="farmList[${index}].amount = parseInt(this.value); renderFarmList();" min="1"></div></div>`).join('');
+        let totalRaw = {};
+        farmList.forEach(entry => {
+            if (entry.cat === "Drogen") {
+                if (entry.item === "Kokain") {
+                    const conf = drugConfigs[entry.item];
+                    for (let res in conf.recipe) totalRaw[res] = (totalRaw[res] || 0) + (conf.recipe[res] * entry.amount);
+                } else if (entry.item.includes("Weed")) {
+                    const cleanName = "Samen (" + entry.item.split('(')[1];
+                    totalRaw[cleanName] = (totalRaw[cleanName] || 0) + entry.amount;
+                    totalRaw["Dünger"] = (totalRaw["Dünger"] || 0) + entry.amount;
+                    totalRaw["Pestizide"] = (totalRaw["Pestizide"] || 0) + entry.amount;
+                } else {
+                    const conf = drugConfigs[entry.item];
+                    const batches = Math.ceil(entry.amount / conf.yield);
+                    for (let chem in conf.recipe) totalRaw[chem] = (totalRaw[chem] || 0) + (conf.recipe[chem] * batches);
+                }
+            } else {
+                let mats = {};
+                function res(name, qty) { if (components[name]) { for (let s in components[name]) res(s, components[name][s] * qty); } else if (name !== "Bargeld" && name !== "Schwarzgeld" && name !== "plz") { mats[name] = (mats[name] || 0) + qty; } }
+                for (let k in categories[entry.cat][entry.item]) res(k, categories[entry.cat][entry.item][k] * entry.amount);
+                for (let mat in mats) { if (processing[mat]) { const proc = processing[mat]; const batches = Math.ceil(mats[mat] / proc.yield); for (let raw in proc) if(raw !== "yield") totalRaw[raw] = (totalRaw[raw] || 0) + (proc[raw] * batches); } else { totalRaw[mat] = (totalRaw[mat] || 0) + mats[mat]; } }
+            }
+        });
+        totalList.innerHTML = Object.keys(totalRaw).sort().map(k => `<li><span>${k}</span><span class="qty">${(Math.round(totalRaw[k] * 100) / 100).toLocaleString()}x</span></li>`).join('');
+        totalDiv.style.display = 'block';
+    }
+    init();
+</script>
+</body>
+</html>
